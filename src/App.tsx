@@ -1,26 +1,46 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+interface AppProps{
+
 }
 
-export default App;
+class AppStreamCam extends React.Component {
+  constructor(props: AppProps) {
+    super(props);
+    this.streamCamVideo= this.streamCamVideo.bind(this)
+  }
+  streamCamVideo() {
+    var constraints = {video: true};
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then(function(mediaStream) {
+        var video = document.querySelector("video");
+
+        if (video != null){
+          video.srcObject = mediaStream;
+          video.onloadedmetadata = function(e) {
+            if (video != null) {
+              video.play();
+            }
+          };
+        }
+      })
+      .catch(function(err) {
+        console.log(err.name + ": " + err.message);
+      }); // always check for errors at the end.
+  }
+  render() {
+    return (
+      <div>
+        <div id="container">
+          <video autoPlay={true} id="videoElement" controls></video>
+        </div>
+        <br/>
+        <button onClick={this.streamCamVideo}>Start streaming</button>
+      </div>
+    );
+  }
+}
+
+export default AppStreamCam;
