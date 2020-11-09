@@ -1,46 +1,54 @@
 import React from 'react';
 import './App.css';
 
-interface AppProps{
-
+interface VideoProps { 
+}
+interface VideoState { 
 }
 
-class AppStreamCam extends React.Component {
-  constructor(props: AppProps) {
-    super(props);
-    this.streamCamVideo= this.streamCamVideo.bind(this)
+class Video extends React.Component<VideoProps, VideoState> {
+
+  videoRef = React.createRef<HTMLVideoElement>()
+  constructor(props: VideoProps) {
+    super(props)
   }
-  streamCamVideo() {
-    var constraints = {video: true};
+
+  componentDidMount() {
+    var constraints = {video: true}
+    let video = this.videoRef.current 
     navigator.mediaDevices
       .getUserMedia(constraints)
       .then(function(mediaStream) {
-        var video = document.querySelector("video");
-
-        if (video != null){
+        if (video) {
           video.srcObject = mediaStream;
           video.onloadedmetadata = function(e) {
-            if (video != null) {
-              video.play();
+            if (video) {
+              video.play()
             }
-          };
+          }
         }
       })
       .catch(function(err) {
         console.log(err.name + ": " + err.message);
       }); // always check for errors at the end.
   }
+
   render() {
     return (
       <div>
-        <div id="container">
-          <video autoPlay={true} id="videoElement" controls></video>
-        </div>
-        <br/>
-        <button onClick={this.streamCamVideo}>Start streaming</button>
+        <video autoPlay={true} ref={this.videoRef}></video>
       </div>
     );
   }
+
 }
 
-export default AppStreamCam;
+function App() {
+  return (
+    <div>
+      <Video/>
+    </div>
+  )
+}
+
+export default App;
