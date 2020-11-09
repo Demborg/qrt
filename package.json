@@ -1,6 +1,6 @@
 {
   "name": "qrt",
-  "homepage": "demborg.se/qrt",
+  "homepage": "https://demborg.github.io/qrt",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
