@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-
+import art from './qrcode.png'
 interface VideoProps { 
 }
 interface VideoState { 
@@ -9,10 +9,6 @@ interface VideoState {
 class Video extends React.Component<VideoProps, VideoState> {
 
   videoRef = React.createRef<HTMLVideoElement>()
-  constructor(props: VideoProps) {
-    super(props)
-  }
-
   componentDidMount() {
     var constraints = {video: true}
     let video = this.videoRef.current 
@@ -35,8 +31,9 @@ class Video extends React.Component<VideoProps, VideoState> {
 
   render() {
     return (
-      <div>
-        <video autoPlay={true} ref={this.videoRef}></video>
+      <div className="videoWrapper">
+        <video autoPlay={true} ref={this.videoRef} className="video"></video>
+        <img src={art} alt="" className="art"/>
       </div>
     );
   }
