@@ -10,7 +10,7 @@ class Video extends React.Component<VideoProps, VideoState> {
 
   videoRef = React.createRef<HTMLVideoElement>()
   componentDidMount() {
-    var constraints = {video: true}
+    var constraints = {video: { facingMode: "environment" }}
     let video = this.videoRef.current 
     navigator.mediaDevices
       .getUserMedia(constraints)
@@ -32,7 +32,7 @@ class Video extends React.Component<VideoProps, VideoState> {
   render() {
     return (
       <div className="videoWrapper">
-        <video autoPlay={true} ref={this.videoRef} className="video"></video>
+        <video autoPlay={true} ref={this.videoRef} playsInline={true} className="video"></video>
         <img src={art} alt="" className="art"/>
       </div>
     );
