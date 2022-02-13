@@ -1,6 +1,5 @@
 import React from 'react';
 import './App.css';
-import art from './qrcode.png'
 interface VideoProps { 
 }
 interface VideoState { 
@@ -33,7 +32,6 @@ class Video extends React.Component<VideoProps, VideoState> {
     return (
       <div className="videoWrapper">
         <video autoPlay={true} ref={this.videoRef} playsInline={true} className="video"></video>
-        <img src={art} alt="" className="art"/>
       </div>
     );
   }
