@@ -70,7 +70,7 @@ class Video extends React.Component<VideoProps, VideoState> {
     return (
       <div className="videoWrapper">
         <video autoPlay={true} ref={this.videoRef} playsInline={true} className="video"></video>
-        <canvas ref={this.canvasRef} className="video"></canvas>
+        <canvas height={300} width={300} ref={this.canvasRef} className="video"></canvas>
       </div>
     );
   }
