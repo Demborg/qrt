@@ -40,15 +40,18 @@ class Video extends React.Component<VideoProps, VideoState> {
 
   computeFrame = () => {
     let video = this.videoRef.current!
-    let canvas = this.canvasRef.current!
-    let ctx = canvas?.getContext('2d')!
-    let width = video.videoHeight / 2
-    let height = video.videoHeight / 2
+    let width = video.videoWidth
+    let height = video.videoHeight
     if (width === 0) {
       return 
     }
-    ctx.drawImage(video, 0, 0, height, width)
-    const frame = ctx.getImageData(0, 0, height, width)
+    let canvas = this.canvasRef.current!
+    canvas.width = width
+    canvas.height = height
+
+    let ctx = canvas?.getContext('2d')!
+    ctx.drawImage(video, 0, 0, width, height)
+    const frame = ctx.getImageData(0, 0, width, height)
     const length = frame.data.length
     const data = frame.data
 
@@ -57,11 +60,14 @@ class Video extends React.Component<VideoProps, VideoState> {
       const green = data[i + 1];
       const blue = data[i + 2];
       let gray = (red + green + blue) / 3
-      if (red < blue || red < green) { 
+      if (red < blue * 1.3 || red < green * 1.3) { 
         data[i + 0] = gray;
+        data[i + 1] = gray;
+        data[i + 2] = gray;
+      } else {
+        data[i + 1] = 0;
+        data[i + 2] = 0;
       }
-      data[i + 1] = gray;
-      data[i + 2] = gray;
     }
     ctx.putImageData(frame, 0, 0);
   };
