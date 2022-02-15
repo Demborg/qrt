@@ -11,7 +11,13 @@ class Video extends React.Component<VideoProps, VideoState> {
   canvasRef = React.createRef<HTMLCanvasElement>()
 
   componentDidMount() {
-    var constraints = {video: { facingMode: "environment" }}
+    let constraints = {
+      video: {
+        width: 640,
+        height: 640,
+        facingMode: "environment",
+      }
+    }
     let video = this.videoRef.current 
     navigator.mediaDevices
       .getUserMedia(constraints)
@@ -48,10 +54,13 @@ class Video extends React.Component<VideoProps, VideoState> {
     let canvas = this.canvasRef.current!
     canvas.width = width
     canvas.height = height
-
     let ctx = canvas?.getContext('2d')!
-    ctx.drawImage(video, 0, 0, width, height)
-    const frame = ctx.getImageData(0, 0, width, height)
+
+    let tmpCanvas = new OffscreenCanvas(width, height)
+    let tmpCtx = tmpCanvas?.getContext('2d')!
+
+    tmpCtx.drawImage(video, 0, 0, width, height)
+    const frame = tmpCtx.getImageData(0, 0, width, height)
     const length = frame.data.length
     const data = frame.data
 
