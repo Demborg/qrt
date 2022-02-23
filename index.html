@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>QRT</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="build/lib.js"></script>
+    <style>
+      .wide {
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <video class="wide" autoplay="true" playsinline="true" id="video" width="100%"></video>
+    <canvas class="wide" id="canvas" width="100%"></canvas>
+  </body>
+
+  <script>
+    Module.onRuntimeInitialized = () => {
+      computeFrame = () => {
+        let video = document.getElementById("video")
+        let canvas = document.getElementById("canvas")
+        let width = video.videoWidth
+        let height = video.videoHeight
+        canvas.setAttribute("width", width)
+        canvas.setAttribute("height", height)
+        let ctx = canvas.getContext("2d")
+        if (width === 0) {
+          return
+        }
+        ctx.drawImage(video, 0, 0, width, height)
+        const frame = ctx.getImageData(0, 0, width, height)
+        const length = frame.data.length
+        const data = frame.data
+
+        const bytesPerElement = Module.HEAP8.BYTES_PER_ELEMENT
+        const arrayPointer = Module._malloc((length * bytesPerElement))
+        Module.HEAP8.set(data, (arrayPointer / bytesPerElement))
+        Module.gray(arrayPointer, width, height)
+        let result = new Uint8ClampedArray(Module.HEAP8.buffer, arrayPointer, length)
+        Module._free(arrayPointer)
+
+        for (let i = 0; i < length; ++i) {
+          data[i] = result[i]
+        }
+        ctx.putImageData(frame, 0, 0);
+      }
+
+      callback = () => {
+        computeFrame()
+        setTimeout(() => {
+            callback()
+          }, 0)
+      }
+      callback()
+    }
+
+    let video = document.getElementById("video")
+    let constraints = {video: { facingMode: "environment", aspectRatio: 1.72}}
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then(function(mediaStream) {
+        if (video) {
+          video.srcObject = mediaStream;
+          video.onloadedmetadata = function(e) {
+            if (video) {
+              video.play()
+            }
+          }
+        }
+      })
+      .catch(function(err) {
+        console.log(err.name + ": " + err.message);
+      }); // always check for errors at the end.
+  </script>
+</html>
