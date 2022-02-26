@@ -58,10 +58,18 @@ private:
 
 std::vector<cv::Point2i> scan(const cv::Mat1b& threshold, Tracker& tracker)
 {
-    tracker.reset();
     std::vector<cv::Point2i> result = {};
+    tracker.reset();
     for( int y=0; y< threshold.rows; y+=1){
         for (int x=0;x< threshold.cols;x+=1){
+            if (tracker.track(threshold.at<uchar>({x, y}) > 0)) {
+                result.push_back({x, y});
+            }
+        }
+    }
+    tracker.reset();
+    for (int x=0;x< threshold.cols;x+=1){
+        for( int y=0; y< threshold.rows; y+=1){
             if (tracker.track(threshold.at<uchar>({x, y}) > 0)) {
                 result.push_back({x, y});
             }
