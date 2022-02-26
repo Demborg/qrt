@@ -15,14 +15,21 @@ struct Parameter {
 
 struct Parameters {
     Parameter threshold = {200, 255, "threshold"};
+    Parameter minRadius = {0, 200, "minimum radius"};
+};
+
+struct trackingResult {
+    bool detection;
+    int radius; 
 };
 
 struct Tracker {
-    bool track(bool pixelIsBright) {
+    trackingResult track(const bool pixelIsBright, const int t) {
         if (dark != pixelIsBright){
             if (state == -1) {
                 state++;
                 unit = sum;
+                start_t = t;
             } else {
                 if (sum < target[state] * unit * 1.5 && sum > target[state] * unit * 0.5) {
                     state++;
@@ -34,11 +41,11 @@ struct Tracker {
             sum = 0;
             if (state == target.size()) {
                 state = -1;
-                return true;
+                return {true, (t - start_t)/2};
             }
         }
         sum++;
-        return false;
+        return {false, -1};
     }
 
     void reset() {
@@ -46,6 +53,7 @@ struct Tracker {
         dark = false;
         sum = 0;
         unit = 0;
+        start_t = 0;
     }
 
 private:
@@ -54,24 +62,27 @@ private:
     bool dark = false;
     int sum = 0;
     int unit = 0;
+    int start_t = 0;
 };
 
-std::vector<cv::Point2i> scan(const cv::Mat1b& threshold, Tracker& tracker)
+std::vector<cv::Point2i> scan(const cv::Mat1b& threshold, Tracker& tracker, const Parameters& parameters)
 {
     std::vector<cv::Point2i> result = {};
     tracker.reset();
     for( int y=0; y< threshold.rows; y+=1){
         for (int x=0;x< threshold.cols;x+=1){
-            if (tracker.track(threshold.at<uchar>({x, y}) > 0)) {
-                result.push_back({x, y});
+            const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, x);
+            if (res.detection && res.radius > parameters.minRadius.value) {
+                result.push_back({x - res.radius, y});
             }
         }
     }
     tracker.reset();
     for (int x=0;x< threshold.cols;x+=1){
         for( int y=0; y< threshold.rows; y+=1){
-            if (tracker.track(threshold.at<uchar>({x, y}) > 0)) {
-                result.push_back({x, y});
+            const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, y);
+            if (res.detection && res.radius > parameters.minRadius.value) {
+                result.push_back({x, y - res.radius});
             }
         }
     }
@@ -87,7 +98,7 @@ void detect(int tmp, const int width, const int height, const Parameters paramet
     cv::threshold(input, input, parameters.threshold.value, 255, cv::THRESH_BINARY);
     cv::cvtColor(input, img, cv::COLOR_BGR2RGBA);
     auto tracker = Tracker();
-    const auto detections = scan(input, tracker);
+    const auto detections = scan(input, tracker, parameters);
     for (const auto detection : detections) {
         cv::circle(img, detection, 10, cv::Scalar(255, 0, 0, 255), cv::FILLED);
     }
@@ -104,7 +115,8 @@ EMSCRIPTEN_BINDINGS(wrapper) {
         .field("max", &Parameter::max)
         .field("name", &Parameter::name);
     emscripten::value_array<Parameters>("Parameters")
-        .element(&Parameters::threshold);
+        .element(&Parameters::threshold)
+        .element(&Parameters::minRadius);
     emscripten::function("detect", &detect, emscripten::allow_raw_pointers());
     emscripten::function("getParameters", &getParameters);
 }
