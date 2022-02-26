@@ -17,35 +17,54 @@ struct Parameters {
     Parameter threshold = {200, 255, "threshold"};
 };
 
-std::vector<cv::Point2i> scan(const cv::Mat1b threshold)
-{
-    std::vector<cv::Point2i> result = {};
+struct Tracker {
+    bool track(bool pixelIsBright) {
+        if (dark != pixelIsBright){
+            if (state == -1) {
+                state++;
+                unit = sum;
+            } else {
+                if (sum < target[state] * unit * 1.5 && sum > target[state] * unit * 0.5) {
+                    state++;
+                } else {
+                    state = dark ? 0 : -1;
+                }
+            }
+            dark = !dark;
+            sum = 0;
+            if (state == target.size()) {
+                state = -1;
+                return true;
+            }
+        }
+        sum++;
+        return false;
+    }
+
+    void reset() {
+        state = -1;
+        dark = false;
+        sum = 0;
+        unit = 0;
+    }
+
+private:
     std::vector<int> target = {1, 1, 3, 1, 1};
     int state = -1;
     bool dark = false;
     int sum = 0;
     int unit = 0;
+};
+
+std::vector<cv::Point2i> scan(const cv::Mat1b& threshold, Tracker& tracker)
+{
+    tracker.reset();
+    std::vector<cv::Point2i> result = {};
     for( int y=0; y< threshold.rows; y+=1){
         for (int x=0;x< threshold.cols;x+=1){
-            if (dark != (threshold.at<uchar>({x, y}) > 0)){
-                if (state == -1) {
-                    state++;
-                    unit = sum;
-                } else {
-                    if (sum < target[state] * unit * 1.5 && sum > target[state] * unit * 0.5) {
-                        state++;
-                    } else {
-                        state = dark ? 0 : -1;
-                    }
-                }
-                if (state == target.size()) {
-                    result.push_back({x, y});
-                    state = -1;
-                }
-                dark = !dark;
-                sum = 0;
+            if (tracker.track(threshold.at<uchar>({x, y}) > 0)) {
+                result.push_back({x, y});
             }
-            sum++;
         }
     }
     return result;
@@ -59,7 +78,8 @@ void detect(int tmp, const int width, const int height, const Parameters paramet
     cv::cvtColor(img, input, cv::COLOR_RGBA2GRAY);
     cv::threshold(input, input, parameters.threshold.value, 255, cv::THRESH_BINARY);
     cv::cvtColor(input, img, cv::COLOR_BGR2RGBA);
-    const auto detections = scan(input);
+    auto tracker = Tracker();
+    const auto detections = scan(input, tracker);
     for (const auto detection : detections) {
         cv::circle(img, detection, 10, cv::Scalar(255, 0, 0, 255), cv::FILLED);
     }
