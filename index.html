@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="build/lib.js"></script>
     <style>
+      .hidden {
+        visibility: hidden;
+        display: none;
+      }
       .wide {
         width: 100%;
       }
@@ -14,6 +18,7 @@
 
   <body>
     <video class="wide" autoplay="true" playsinline="true" id="video" width="100%"></video>
+    <canvas class="hidden" id="tmp-canvas" width="100%"></canvas>
     <canvas class="wide" id="canvas" width="100%"></canvas>
   </body>
 
@@ -47,7 +52,7 @@
 
     computeFrame = () => {
       let video = document.getElementById("video")
-      let canvas = document.getElementById("canvas")
+      let canvas = document.getElementById("tmp-canvas")
       let width = video.videoWidth
       let height = video.videoHeight
       canvas.setAttribute("width", width)
@@ -71,6 +76,10 @@
       for (let i = 0; i < length; ++i) {
         data[i] = result[i]
       }
+      canvas = document.getElementById("canvas")
+      canvas.setAttribute("width", width)
+      canvas.setAttribute("height", height)
+      ctx = canvas.getContext("2d")
       ctx.putImageData(frame, 0, 0);
     }
 
