@@ -101,6 +101,8 @@ void detect(int tmp, const int width, const int height, const Parameters paramet
     auto io_array = reinterpret_cast<uint8_t*>(tmp);
     cv::Mat img(height, width, CV_8UC4, io_array);
     cv::Mat1b input(height, width);
+    cv::Mat1b horisontal = cv::Mat1b::zeros(height, width);
+    cv::Mat1b vertical = cv::Mat1b::zeros(height, width);
     cv::cvtColor(img, input, cv::COLOR_RGBA2GRAY);
     cv::medianBlur(input, input, 2 * parameters.blur.value + 1);
     cv::threshold(input, input, parameters.threshold.value, 255, cv::THRESH_BINARY);
@@ -108,8 +110,19 @@ void detect(int tmp, const int width, const int height, const Parameters paramet
     auto tracker = Tracker();
     const auto detections = scan(input, tracker, parameters);
     for (const auto detection : detections) {
-        cv::circle(img, detection.point, detection.size, detection.horisontal ? cv::Scalar(255, 0, 0, 255) : cv::Scalar(0, 0, 255, 255));
+        cv::Mat1b tmpArray = cv::Mat1b::zeros(height, width);
+        cv::circle(tmpArray, detection.point, detection.size, 1, cv::FILLED);
+        if (detection.horisontal)
+        {
+            horisontal += tmpArray;
+        }
+        else
+        {
+            vertical += tmpArray;
+        }
     }
+    cv::multiply(horisontal, vertical, horisontal);
+    cv::cvtColor(horisontal, img, cv::COLOR_GRAY2RGBA);
 }
 
 Parameters getParameters()
