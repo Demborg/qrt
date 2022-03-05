@@ -14,6 +14,7 @@ struct Parameter {
 };
 
 struct Parameters {
+    Parameter blur = {0, 10, "blur"};
     Parameter threshold = {200, 255, "threshold"};
     Parameter minRadius = {0, 200, "minimum radius"};
 };
@@ -101,6 +102,7 @@ void detect(int tmp, const int width, const int height, const Parameters paramet
     cv::Mat img(height, width, CV_8UC4, io_array);
     cv::Mat1b input(height, width);
     cv::cvtColor(img, input, cv::COLOR_RGBA2GRAY);
+    cv::medianBlur(input, input, 2 * parameters.blur.value + 1);
     cv::threshold(input, input, parameters.threshold.value, 255, cv::THRESH_BINARY);
     cv::cvtColor(input, img, cv::COLOR_BGR2RGBA);
     auto tracker = Tracker();
@@ -122,6 +124,7 @@ EMSCRIPTEN_BINDINGS(wrapper) {
         .field("name", &Parameter::name);
     emscripten::value_array<Parameters>("Parameters")
         .element(&Parameters::threshold)
+        .element(&Parameters::blur)
         .element(&Parameters::minRadius);
     emscripten::function("detect", &detect, emscripten::allow_raw_pointers());
     emscripten::function("getParameters", &getParameters);
