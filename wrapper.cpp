@@ -25,6 +25,7 @@ struct trackingResult {
 
 struct PointWithSize {
     cv::Point2i point;
+    bool horisontal; 
     int size;
 };
 
@@ -72,13 +73,13 @@ private:
 
 std::vector<PointWithSize> scan(const cv::Mat1b& threshold, Tracker& tracker, const Parameters& parameters)
 {
-std::vector<PointWithSize> result = {};
+    std::vector<PointWithSize> result = {};
     tracker.reset();
     for( int y=0; y< threshold.rows; y+=1){
         for (int x=0;x< threshold.cols;x+=1){
             const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, x);
             if (res.detection && res.radius > parameters.minRadius.value) {
-                result.push_back({{x - res.radius, y}, res.radius});
+                result.push_back({{x - res.radius, y}, true, res.radius});
             }
         }
     }
@@ -87,7 +88,7 @@ std::vector<PointWithSize> result = {};
         for( int y=0; y< threshold.rows; y+=1){
             const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, y);
             if (res.detection && res.radius > parameters.minRadius.value) {
-                result.push_back({{x, y - res.radius}, res.radius});
+                result.push_back({{x, y - res.radius}, false, res.radius});
             }
         }
     }
@@ -105,7 +106,7 @@ void detect(int tmp, const int width, const int height, const Parameters paramet
     auto tracker = Tracker();
     const auto detections = scan(input, tracker, parameters);
     for (const auto detection : detections) {
-        cv::circle(img, detection.point, detection.size, cv::Scalar(255, 0, 0, 255));
+        cv::circle(img, detection.point, detection.size, detection.horisontal ? cv::Scalar(255, 0, 0, 255) : cv::Scalar(0, 0, 255, 255));
     }
 }
 
