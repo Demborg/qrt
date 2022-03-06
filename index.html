@@ -18,6 +18,15 @@
         display: grid;
         grid-template-columns: 1fr;
       }
+      .z0 {
+        z-index: -2;
+      }
+      .z1 {
+        z-index: -1;
+      }
+      .z2 {
+        z-index: 0;
+      }
       .child {
         grid-row-start: 1;
         grid-column-start: 1;
@@ -29,8 +38,9 @@
 
   <body>
     <div class="parent" id="view">
-      <video class="child wide" autoplay="true" playsinline="true" id="video"></video>
-      <canvas class="child wide" id="canvas"></canvas>
+      <video class="child wide z0" autoplay="true" playsinline="true" id="video"></video>
+      <canvas class="child wide z1" id="canvas"></canvas>
+      <h1 class="child z2" id="fps"></h1>
       <canvas class="child hidden" id="tmp-canvas"></canvas>
     </div>
   </body>
@@ -81,10 +91,15 @@
 
     callback = () => {
       computeFrame()
+      let newTime = Date.now()
+      fps = document.getElementById("fps")
+      fps.innerText = (1000 / (newTime - time)).toFixed() + "fps"
+      time = newTime
       setTimeout(() => {
           callback()
         }, 0)
     }
+    let time = Date.now()
     setupSliders()
     callback()
   }
