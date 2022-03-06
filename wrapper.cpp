@@ -48,7 +48,7 @@ struct Tracker {
             sum = 0;
             if (state == target.size()) {
                 state = -1;
-                return {true, (t - start_t)/2};
+                return {true, (t - start_t)/7};
             }
         }
         sum++;
@@ -110,19 +110,24 @@ void detect(int tmp, const int width, const int height, const Parameters paramet
     auto tracker = Tracker();
     const auto detections = scan(input, tracker, parameters);
     for (const auto detection : detections) {
+        const auto size = detection.size;
         cv::Mat1b tmpArray = cv::Mat1b::zeros(height, width);
-        cv::circle(tmpArray, detection.point, detection.size, 1, cv::FILLED);
         if (detection.horisontal)
         {
+            cv::ellipse(tmpArray, detection.point, {size / 2, 2 * size}, 0, 0, 360, 1, cv::FILLED);
             horisontal += tmpArray;
         }
         else
         {
+            cv::ellipse(tmpArray, detection.point, {2 * size, size / 2}, 0, 0, 360, 1, cv::FILLED);
             vertical += tmpArray;
         }
     }
-    cv::multiply(horisontal, vertical, horisontal);
-    cv::cvtColor(horisontal, img, cv::COLOR_GRAY2RGBA);
+    cv::Mat1b product;
+    cv::multiply(horisontal, vertical, product);
+    cv::Mat1b sum;
+    cv::add(horisontal, vertical, sum);
+    cv::merge(std::vector<cv::Mat1b>{horisontal, vertical, product, sum}, img);
 }
 
 Parameters getParameters()
