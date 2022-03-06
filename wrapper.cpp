@@ -15,6 +15,7 @@ struct Parameter {
 
 struct Parameters {
     Parameter blur = {0, 10, "blur"};
+    Parameter scanStep = {1, 10, "scan Step (px)"};
     Parameter threshold = {200, 255, "threshold"};
     Parameter minRadius = {0, 200, "minimum radius"};
 };
@@ -81,7 +82,7 @@ std::vector<PointWithSize> scan(const cv::Mat1b& threshold, Tracker& tracker, co
 {
     std::vector<PointWithSize> result = {};
     tracker.reset();
-    for( int y=0; y< threshold.rows; y+=1){
+    for( int y=0; y< threshold.rows; y+=parameters.scanStep.value){
         for (int x=0;x< threshold.cols;x+=1){
             const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, x);
             if (res.detection && res.radius > parameters.minRadius.value) {
@@ -90,7 +91,7 @@ std::vector<PointWithSize> scan(const cv::Mat1b& threshold, Tracker& tracker, co
         }
     }
     tracker.reset();
-    for (int x=0;x< threshold.cols;x+=1){
+    for (int x=0;x< threshold.cols;x+=parameters.scanStep.value){
         for( int y=0; y< threshold.rows; y+=1){
             const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, y);
             if (res.detection && res.radius > parameters.minRadius.value) {
@@ -148,6 +149,7 @@ EMSCRIPTEN_BINDINGS(wrapper) {
     emscripten::value_array<Parameters>("Parameters")
         .element(&Parameters::threshold)
         .element(&Parameters::blur)
+        .element(&Parameters::scanStep)
         .element(&Parameters::minRadius);
     emscripten::function("detect", &detect, emscripten::allow_raw_pointers());
     emscripten::function("getParameters", &getParameters);
