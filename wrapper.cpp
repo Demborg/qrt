@@ -80,7 +80,7 @@ std::vector<PointWithSize> scan(const cv::Mat1b& threshold, Tracker& tracker, co
         for (int x=0;x< threshold.cols;x+=1){
             const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, x);
             if (res.detection && res.radius > parameters.minRadius.value) {
-                result.push_back({{x - res.radius, y}, true, res.radius});
+                result.push_back({{x - static_cast<int>(3.5 * res.radius), y}, true, res.radius});
             }
         }
     }
@@ -89,7 +89,7 @@ std::vector<PointWithSize> scan(const cv::Mat1b& threshold, Tracker& tracker, co
         for( int y=0; y< threshold.rows; y+=1){
             const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, y);
             if (res.detection && res.radius > parameters.minRadius.value) {
-                result.push_back({{x, y - res.radius}, false, res.radius});
+                result.push_back({{x, y - static_cast<int>(3.5 * res.radius)}, false, res.radius});
             }
         }
     }

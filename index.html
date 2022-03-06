@@ -13,13 +13,25 @@
       .wide {
         width: 100%;
       }
+      .parent {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .child {
+        grid-row-start: 1;
+        grid-column-start: 1;
+        display: flex;
+        flex-direction: column;
+      }
     </style>
   </head>
 
   <body>
-    <video class="wide" autoplay="true" playsinline="true" id="video" width="100%"></video>
-    <canvas class="hidden" id="tmp-canvas" width="100%"></canvas>
-    <canvas class="wide" id="canvas" width="100%"></canvas>
+    <div class="parent" id="view">
+      <video class="child wide" autoplay="true" playsinline="true" id="video"></video>
+      <canvas class="child wide" id="canvas"></canvas>
+      <canvas class="child hidden" id="tmp-canvas"></canvas>
+    </div>
   </body>
 
   <script>
@@ -31,7 +43,7 @@
   Module.onRuntimeInitialized = () => {
     let parameters = Module.getParameters()
     setupSliders = () => {
-      let canvas = document.getElementById("canvas")
+      let canvas = document.getElementById("view")
       parameters.forEach(parameter => {
         let name = document.createElement("p")
         name.innerText = parameter.name + ": " + parameter.value
