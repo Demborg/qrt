@@ -42,7 +42,7 @@
     let parameters = Module.getParameters()
     setupSliders = () => {
       parameters.forEach(parameter => {
-        gui.add(parameter, "value").max(parameter.max).name(parameter.name)
+        gui.add(parameter, "value", 0, parameter.max).name(parameter.name)
       })
     }
 

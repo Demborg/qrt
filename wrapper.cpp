@@ -72,6 +72,11 @@ private:
     int start_t = 0;
 };
 
+int round2int(const float value)
+{
+    return static_cast<int>(std::round(value));
+}
+
 std::vector<PointWithSize> scan(const cv::Mat1b& threshold, Tracker& tracker, const Parameters& parameters)
 {
     std::vector<PointWithSize> result = {};
@@ -80,7 +85,7 @@ std::vector<PointWithSize> scan(const cv::Mat1b& threshold, Tracker& tracker, co
         for (int x=0;x< threshold.cols;x+=1){
             const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, x);
             if (res.detection && res.radius > parameters.minRadius.value) {
-                result.push_back({{x - static_cast<int>(3.5 * res.radius), y}, true, res.radius});
+                result.push_back({{x - round2int(3.5 * res.radius), y}, true, res.radius});
             }
         }
     }
@@ -89,7 +94,7 @@ std::vector<PointWithSize> scan(const cv::Mat1b& threshold, Tracker& tracker, co
         for( int y=0; y< threshold.rows; y+=1){
             const auto res = tracker.track(threshold.at<uchar>({x, y}) > 0, y);
             if (res.detection && res.radius > parameters.minRadius.value) {
-                result.push_back({{x, y - static_cast<int>(3.5 * res.radius)}, false, res.radius});
+                result.push_back({{x, y - round2int(3.5 * res.radius)}, false, res.radius});
             }
         }
     }
@@ -114,12 +119,12 @@ void detect(int tmp, const int width, const int height, const Parameters paramet
         cv::Mat1b tmpArray = cv::Mat1b::zeros(height, width);
         if (detection.horisontal)
         {
-            cv::ellipse(tmpArray, detection.point, {size / 2, 2 * size}, 0, 0, 360, 1, cv::FILLED);
+            cv::ellipse(tmpArray, detection.point, {size / 4, round2int(1.5 * size)}, 0, 0, 360, 1, cv::FILLED);
             horisontal += tmpArray;
         }
         else
         {
-            cv::ellipse(tmpArray, detection.point, {2 * size, size / 2}, 0, 0, 360, 1, cv::FILLED);
+            cv::ellipse(tmpArray, detection.point, {round2int(1.5 * size), size / 4}, 0, 0, 360, 1, cv::FILLED);
             vertical += tmpArray;
         }
     }
