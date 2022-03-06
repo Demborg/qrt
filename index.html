@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="build/lib.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js" integrity="sha512-WoO4Ih0CDOSLYafy22wZD/mcJ7k0ESLqtQsFa6zFKnEUrbtuGU+GkLtVhgt93xa2qewG5gKEC6CWlN8OaCTSVg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
       .hidden {
         visibility: hidden;
@@ -36,29 +37,12 @@
 
   <script>
   
-  function insertAfter(newNode, existingNode) {
-    existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
-  }
-  
   Module.onRuntimeInitialized = () => {
+    let gui = new dat.GUI()
     let parameters = Module.getParameters()
     setupSliders = () => {
-      let canvas = document.getElementById("view")
       parameters.forEach(parameter => {
-        let name = document.createElement("p")
-        name.innerText = parameter.name + ": " + parameter.value
-        insertAfter(name, canvas)
-
-        let input = document.createElement("input")
-        input.setAttribute("type", "range")
-        input.setAttribute("max", parameter.max)
-        input.setAttribute("value", parameter.value)
-        input.setAttribute("id", parameter.name)
-        input.onchange = () => {
-          parameter.value = input.value
-          name.innerText = parameter.name + ": " + parameter.value
-        }
-        insertAfter(input, name)
+        gui.add(parameter, "value").max(parameter.max).name(parameter.name)
       })
     }
 
